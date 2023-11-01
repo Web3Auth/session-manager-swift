@@ -1,29 +1,12 @@
 import Foundation
-
-public func dictionaryToStruct<T: Decodable>(_ dictionary: [String: Any]) -> T? {
-    guard let jsonData = try? JSONSerialization.data(withJSONObject: dictionary, options: []),
-          let structObject = try? JSONDecoder().decode(T.self, from: jsonData) else {
-        return nil
-    }
-    return structObject
-}
+import secp256k1
 
 public func generateRandomData(length: Int) -> Data? {
     return Data.randomOfLength(length)
 }
 
-public func generatePrivateKeyData() -> Data? {
-    return SECP256K1.generatePrivateKey()
-}
-
-func decodedBase64(_ base64URLSafe: String) -> Data? {
-    var base64 = base64URLSafe
-        .replacingOccurrences(of: "-", with: "+")
-        .replacingOccurrences(of: "_", with: "/")
-    if base64.count % 4 != 0 {
-        base64.append(String(repeating: "=", count: 4 - base64.count % 4))
-    }
-    return Data(base64Encoded: base64)
+public func generatePrivateKey() throws -> secp256k1.KeyAgreement.PrivateKey {
+    return try secp256k1.KeyAgreement.PrivateKey(format: .uncompressed)
 }
 
 func tupleToArray(_ tuple: Any) -> [UInt8] {

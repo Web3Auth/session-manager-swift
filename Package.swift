@@ -13,13 +13,14 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "KeychainSwift", url: "https://github.com/evgenyneu/keychain-swift.git", from: "20.0.0"),
-        .package(name: "web3.swift", url: "https://github.com/argentlabs/web3.swift", from: "1.6.0"),
-        .package(name: "CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0")
+        .package(name: "secp256k1", url: "https://github.com/GigaBitcoin/secp256k1.swift.git", .exact( "0.12.2")),
+        .package(name: "CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0"),
+        .package(name: "BigInt", url: "https://github.com/attaswift/BigInt.git", from: "5.3.0")
     ],
     targets: [
         .target(
             name: "SessionManager",
-            dependencies: ["KeychainSwift", "web3.swift", "CryptoSwift"]),
+            dependencies: ["KeychainSwift", "secp256k1", "CryptoSwift", "BigInt"]),
         .testTarget(
             name: "SessionManagerTests",
             dependencies: ["SessionManager"])

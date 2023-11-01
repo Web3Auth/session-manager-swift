@@ -11,6 +11,7 @@ Pod::Spec.new do |spec|
   spec.source       = { :git => "https://github.com/Web3Auth/session-manager-swift.git", :tag => spec.version }
   spec.source_files = "Sources/SessionManager/*.{swift}","Sources/SessionManager/**/*.{swift}"
   spec.dependency 'KeychainSwift', '~> 20.0.0'
-  spec.dependency 'web3.swift', '~> 1.6.0'
+  spec.dependency 'secp256k1.swift', '~> 0.1'
   spec.dependency 'CryptoSwift', '~> 1.8.0'
+  spec.dependency 'BigInt', '~> 5.0.0'
 end
