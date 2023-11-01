@@ -31,6 +31,31 @@ public struct ECIES: Codable {
         self.ciphertext = ciphertext
         self.mac = mac
     }
+    
+    public init(params: String) throws {
+        let data = params.data(using: .utf8) ?? Data()
+        var arr = Array(repeating: "", count: 4)
+        do {
+            let dict = try JSONSerialization.jsonObject(with: data) as? [String: String]
+            dict?.forEach { key, value in
+                if key == "iv" {
+                    arr[0] = value
+                } else if key == "ephemPublicKey" {
+                    arr[1] = value
+                } else if key == "ciphertext" {
+                    arr[2] = value
+                } else if key == "mac" {
+                    arr[3] = value
+                }
+            }
+            iv = arr[0]
+            ephemPublicKey = arr[1]
+            ciphertext = arr[2]
+            mac = arr[3]
+        } catch let error {
+            throw SessionManagerError.runtimeError(error.localizedDescription)
+        }
+    }
 
     var iv: String
     var ephemPublicKey: String
