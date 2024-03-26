@@ -1,4 +1,5 @@
 import Foundation
+import curveSecp256k1
 
 public func dictionaryToStruct<T: Decodable>(_ dictionary: [String: Any]) -> T? {
     guard let jsonData = try? JSONSerialization.data(withJSONObject: dictionary, options: []),
@@ -12,8 +13,8 @@ public func generateRandomData(length: Int) -> Data? {
     return Data.randomOfLength(length)
 }
 
-public func generatePrivateKeyData() -> Data? {
-    return SECP256K1.generatePrivateKey()
+public func generatePrivateKeyData() throws -> Data? {
+    return Data( hex: try curveSecp256k1.SecretKey().serialize())
 }
 
 func decodedBase64(_ base64URLSafe: String) -> Data? {
