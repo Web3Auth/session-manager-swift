@@ -59,8 +59,8 @@ final class SessionManagementTest: XCTestCase {
 
     func testEncryptAndSign() throws {
         let privKey = "dda863b615ac6de27fb680b5563db3c19176a6f42cc1dee1768e220983385e3e"
-        let encData = "{\"iv\":\"693407372626b11017d0ec30acd29e6a\",\"ciphertext\":\"cbe09442851a0463b3e34e2f912c6aee\",\"ephemPublicKey\":\"0477e20c5d9e3281a4eca7d07c1c4cc9765522ea7966cd7ea8f552da42049778d4fcf44b35b59e84eddb1fa3266350e4f2d69d62da82819d51f107550e03852661\",\"mac\":\"96d358f46ef371982af600829c101e78f6c5d5f960bd96fdd2ca52763ee50f65\"}"
-        let hashData = encData.sha3(.keccak256)
+        let encdata = "{\"iv\":\"693407372626b11017d0ec30acd29e6a\",\"ciphertext\":\"cbe09442851a0463b3e34e2f912c6aee\",\"ephemPublicKey\":\"0477e20c5d9e3281a4eca7d07c1c4cc9765522ea7966cd7ea8f552da42049778d4fcf44b35b59e84eddb1fa3266350e4f2d69d62da82819d51f107550e03852661\",\"mac\":\"96d358f46ef371982af600829c101e78f6c5d5f960bd96fdd2ca52763ee50f65\"}"
+        let hashData = encdata.sha3(.keccak256)
         let secretKey = try curveSecp256k1.SecretKey(hex: privKey)
         let sig = try curveSecp256k1.ECDSA.signRecoverable(key: secretKey, hash: hashData).serialize()
         XCTAssertEqual(sig.suffix(130).prefix(64), "b0161b8abbd66da28734d105e28455bf9a48a33ee1dfde71f96e2e9197175650")
