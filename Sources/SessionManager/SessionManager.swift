@@ -4,10 +4,9 @@
 //
 //  Created by Dhruv Jaiswal on 18/07/22.
 //
-import BigInt
 import Foundation
 import OSLog
-import web3
+import curveSecp256k1
 
 public class SessionManager {
     private var sessionServerBaseUrl = "https://broadcast-server.tor.us/"
@@ -45,8 +44,8 @@ public class SessionManager {
         Router.baseURL = self.sessionServerBaseUrl
     }
 
-    private func generateRandomSessionID() -> String? {
-        if let val = generatePrivateKeyData()?.toHexString().padStart(toLength: 64, padString: "0") {
+    private func generateRandomSessionID() throws -> String? {
+        if let val = try generatePrivateKeyData()?.toHexString().padStart(toLength: 64, padString: "0") {
             return val
         }
         return nil
@@ -54,17 +53,27 @@ public class SessionManager {
 
     public func createSession<T: Encodable>(data: T) async throws -> String {
         do {
-            guard let sessionID = generateRandomSessionID() else { throw SessionManagerError.sessionIDAbsent }
+            guard let sessionID = try generateRandomSessionID() else { throw SessionManagerError.sessionIDAbsent }
             self.sessionID = sessionID
-            let privKey = sessionID.hexa
-            guard let publicKeyHex = SECP256K1.privateToPublic(privateKey: sessionID.hexa.data,
-                                                               compressed: false)?.web3.hexString.web3.noHexPrefix
-            else { throw SessionManagerError.runtimeError("Invalid Session ID") }
+//            let privKey = sessionID.hexa
+            let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionID)
+//            let pubkey = try sessionSecret.toPublic().serialize(compressed: false)
+            
+            let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
+            
             let encodedObj = try JSONEncoder().encode(data)
             let jsonString = String(data: encodedObj, encoding: .utf8) ?? ""
             let encData = try encryptData(privkeyHex: sessionID, jsonString)
-            let sig = try SECP256K1().sign(privkey: privKey.toHexString(), messageData: encData)
-            let sigData = try JSONEncoder().encode(sig)
+            
+            let hashData = encData.sha3(.keccak256)
+            
+            let sig = try curveSecp256k1.ECDSA.signRecoverable(key: sessionSecret, hash: hashData).serialize()
+            let sigRS = [
+                "r" : sig.suffix(130).prefix(64),
+                "s" : sig.suffix(66).prefix(64)
+            ]
+//            let sigData = try JSONEncoder().encode(sigRS)
+            let sigData = try JSONSerialization.data(withJSONObject: sigRS)
             let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
             let sessionRequestModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: sessionTime)
             let api = Router.set(T: sessionRequestModel)
@@ -86,8 +95,10 @@ public class SessionManager {
         guard let sessionID = sessionID else {
             throw SessionManagerError.sessionIDAbsent
         }
-        guard let publicKeyHex = SECP256K1.privateToPublic(privateKey: sessionID.hexa.data, compressed: false)?.web3.hexString.web3.noHexPrefix
-        else { throw SessionManagerError.runtimeError("Invalid Session ID") }
+        let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionID)
+        
+        let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
+        
         let api = Router.get([.init(name: "key", value: "\(publicKeyHex)"), .init(name: "namespace", value: sessionNamespace)])
         let result = await Service.request(router: api)
         switch result {
@@ -112,12 +123,19 @@ public class SessionManager {
             throw SessionManagerError.sessionIDAbsent
         }
         do {
-            let privKey = sessionID.hexa
-            guard let publicKeyHex = SECP256K1.privateToPublic(privateKey: sessionID.hexa.data, compressed: false)?.web3.hexString.web3.noHexPrefix
-            else { throw SessionManagerError.runtimeError("Invalid Session ID") }
+            let privKey = try curveSecp256k1.SecretKey(hex: sessionID)
+            let publicKeyHex = try privKey.toPublic().serialize(compressed: false)
+                    
             let encData = try encryptData(privkeyHex: sessionID, "")
-            let sig = try SECP256K1().sign(privkey: privKey.toHexString(), messageData: encData)
-            let sigData = try JSONEncoder().encode(sig)
+            let hashData = encData.sha3(.keccak256)
+            let sig = try curveSecp256k1.ECDSA.signRecoverable(key: privKey, hash: hashData).serialize()
+            
+            let sigRS = [
+                "r" : sig.suffix(130).prefix(64),
+                "s" : sig.suffix(66).prefix(64)
+            ]
+//            let sigData = try JSONEncoder().encode(sigRS)
+            let sigData = try JSONSerialization.data(withJSONObject: sigRS)
             let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
             let sessionLogoutDataModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: 1)
             let api = Router.set(T: sessionLogoutDataModel)
