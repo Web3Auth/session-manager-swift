@@ -9,7 +9,7 @@ import OSLog
 import curveSecp256k1
 
 public class SessionManager {
-    private var sessionServerBaseUrl = "https://broadcast-server.tor.us/"
+    private var sessionServerBaseUrl = "https://session.web3auth.io/"
     private var sessionID: String? {
         didSet {
             if let sessionID = sessionID {
