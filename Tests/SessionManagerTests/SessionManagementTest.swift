@@ -12,7 +12,7 @@ final class SessionManagementTest: XCTestCase {
 
     private func generatePrivateandPublicKey() throws -> (privKey: String, pubKey: String) {
         let privKeyData = curveSecp256k1.SecretKey()
-        var publicKey = try privKeyData.toPublic()
+        let publicKey = try privKeyData.toPublic()
         let serialized = try publicKey.serialize(compressed: false)
         return (privKey: try privKeyData.serialize(), pubKey: serialized)
     }
