@@ -14,7 +14,7 @@ public func generateRandomData(length: Int) -> Data? {
 }
 
 public func generatePrivateKeyData() throws -> Data? {
-    return Data( hex: try curveSecp256k1.SecretKey().serialize())
+    return Data(hexString: try curveSecp256k1.SecretKey().serialize())
 }
 
 func decodedBase64(_ base64URLSafe: String) -> Data? {

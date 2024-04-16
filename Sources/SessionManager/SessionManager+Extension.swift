@@ -1,11 +1,3 @@
-//
-//  SessionManagement+Extension.swift
-//  Web3Auth
-//
-//  Created by Dhruv Jaiswal on 03/10/22.
-//
-
-import CryptoSwift
 import Foundation
 import curveSecp256k1
 
