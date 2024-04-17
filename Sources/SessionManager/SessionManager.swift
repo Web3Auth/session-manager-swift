@@ -45,7 +45,7 @@ public class SessionManager {
     }
 
     private func generateRandomSessionID() throws -> String? {
-        if let val = try generatePrivateKeyData()?.toHexString().padStart(toLength: 64, padString: "0") {
+        if let val = try generatePrivateKeyData()?.hexString.padStart(toLength: 64, padString: "0") {
             return val
         }
         return nil
@@ -55,24 +55,25 @@ public class SessionManager {
         do {
             guard let sessionID = try generateRandomSessionID() else { throw SessionManagerError.sessionIDAbsent }
             self.sessionID = sessionID
-//            let privKey = sessionID.hexa
-            let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionID)
-//            let pubkey = try sessionSecret.toPublic().serialize(compressed: false)
             
+            let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionID)
+
             let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
             
             let encodedObj = try JSONEncoder().encode(data)
             let jsonString = String(data: encodedObj, encoding: .utf8) ?? ""
             let encData = try encryptData(privkeyHex: sessionID, jsonString)
+            guard let encodedData = encData.data(using: .utf8) else {
+                throw SessionManagerError.encodingError
+            }
+            let hashData = try curveSecp256k1.keccak256(data: encodedData)
             
-            let hashData = encData.sha3(.keccak256)
-            
-            let sig = try curveSecp256k1.ECDSA.signRecoverable(key: sessionSecret, hash: hashData).serialize()
+            let sig = try curveSecp256k1.ECDSA.signRecoverable(key: sessionSecret, hash: hashData.hexString).serialize()
             let sigRS = [
                 "r" : sig.suffix(130).prefix(64),
                 "s" : sig.suffix(66).prefix(64)
             ]
-//            let sigData = try JSONEncoder().encode(sigRS)
+
             let sigData = try JSONSerialization.data(withJSONObject: sigRS)
             let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
             let sessionRequestModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: sessionTime)
@@ -127,14 +128,20 @@ public class SessionManager {
             let publicKeyHex = try privKey.toPublic().serialize(compressed: false)
                     
             let encData = try encryptData(privkeyHex: sessionID, "")
-            let hashData = encData.sha3(.keccak256)
-            let sig = try curveSecp256k1.ECDSA.signRecoverable(key: privKey, hash: hashData).serialize()
+            
+            guard let encodedData = encData.data(using: .utf8) else {
+                throw SessionManagerError.encodingError
+            }
+            
+            let hashData = try curveSecp256k1.keccak256(data: encodedData)
+            
+            let sig = try curveSecp256k1.ECDSA.signRecoverable(key: privKey, hash: hashData.hexString).serialize()
             
             let sigRS = [
                 "r" : sig.suffix(130).prefix(64),
                 "s" : sig.suffix(66).prefix(64)
             ]
-//            let sigData = try JSONEncoder().encode(sigRS)
+
             let sigData = try JSONSerialization.data(withJSONObject: sigRS)
             let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
             let sessionLogoutDataModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: 1)

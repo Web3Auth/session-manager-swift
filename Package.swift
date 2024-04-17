@@ -13,15 +13,13 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "KeychainSwift", url: "https://github.com/evgenyneu/keychain-swift.git", from: "20.0.0"),
-        .package(name: "curvelib.swift", url: "https://github.com/tkey/curvelib.swift", from: "0.1.2"),
-        .package(name: "CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0")
+        .package(name: "curvelib.swift", url: "https://github.com/tkey/curvelib.swift", from: "1.0.0"),
     ],
     targets: [
         .target(
             name: "SessionManager",
-            dependencies: ["KeychainSwift", "CryptoSwift" , 
+            dependencies: ["KeychainSwift",
                 .product(name: "curveSecp256k1", package: "curvelib.swift"),
-                           .product(name: "encryption_aes_cbc_sha512", package: "curvelib.swift")
             ]
         
         ),
