@@ -12,4 +12,5 @@ Pod::Spec.new do |spec|
   spec.source_files = "Sources/SessionManager/**/*.{swift}"
   spec.dependency 'KeychainSwift', '~> 20.0.0'
   spec.dependency 'web3.swift', '~> 1.6.0'
+  spec.dependency 'curvelib.swift', '~> 1.0.1'
 end

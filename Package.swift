@@ -13,7 +13,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "KeychainSwift", url: "https://github.com/evgenyneu/keychain-swift.git", from: "20.0.0"),
-        .package(name: "curvelib.swift", url: "https://github.com/tkey/curvelib.swift", from: "1.0.0"),
+        .package(name: "curvelib.swift", url: "https://github.com/tkey/curvelib.swift", from: "1.0.1"),
     ],
     targets: [
         .target(
