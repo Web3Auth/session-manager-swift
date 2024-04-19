@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "TorusSessionManager"
-  spec.version      = "4.0.1"
+  spec.version      = "4.0.2"
   spec.platform      = :ios, "14.0"
   spec.summary      = "SessionManagement SDK"
   spec.homepage     = "https://github.com/Web3Auth"
@@ -11,6 +11,5 @@ Pod::Spec.new do |spec|
   spec.source       = { :git => "https://github.com/Web3Auth/session-manager-swift.git", :tag => spec.version }
   spec.source_files = "Sources/SessionManager/**/*.{swift}"
   spec.dependency 'KeychainSwift', '~> 20.0.0'
-  spec.dependency 'web3.swift', '~> 1.6.0'
   spec.dependency 'curvelib.swift', '~> 1.0.1'
 end
