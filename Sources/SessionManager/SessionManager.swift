@@ -30,7 +30,7 @@ public class SessionManager {
         sessionID = val
     }
 
-    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, sessionID: String? = nil, allowedOrigin: String? = nil) {
+    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, sessionID: String? = nil, allowedOrigin: String? = "*") {
         if let sessionID = sessionID {
             self.sessionID = sessionID
         } else {
