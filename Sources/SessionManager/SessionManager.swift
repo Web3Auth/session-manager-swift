@@ -9,7 +9,7 @@ import OSLog
 import curveSecp256k1
 
 public class SessionManager {
-    private var sessionServerBaseUrl = "https://session.web3auth.io/"
+    private var sessionServerBaseUrl = "https://session.web3auth.io/v2/"
     private var sessionID: String? {
         didSet {
             if let sessionID = sessionID {
@@ -20,6 +20,7 @@ public class SessionManager {
 
     private let sessionNamespace: String = ""
     private let sessionTime: Int
+    private let allowedOrigin: String
 
     public func getSessionID() -> String? {
         return sessionID
@@ -29,7 +30,7 @@ public class SessionManager {
         sessionID = val
     }
 
-    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, sessionID: String? = nil) {
+    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, sessionID: String? = nil, allowedOrigin: String? = "*") {
         if let sessionID = sessionID {
             self.sessionID = sessionID
         } else {
@@ -41,6 +42,7 @@ public class SessionManager {
             self.sessionServerBaseUrl = sessionServerBaseUrl
         }
         self.sessionTime = min(sessionTime, 7 * 86400)
+        self.allowedOrigin = allowedOrigin ?? "*"
         Router.baseURL = self.sessionServerBaseUrl
     }
 
@@ -76,7 +78,7 @@ public class SessionManager {
 
             let sigData = try JSONSerialization.data(withJSONObject: sigRS)
             let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
-            let sessionRequestModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: sessionTime)
+            let sessionRequestModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: sessionTime, allowedOrigin: allowedOrigin)
             let api = Router.set(T: sessionRequestModel)
             let result = await Service.request(router: api)
             switch result {
@@ -99,8 +101,8 @@ public class SessionManager {
         let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionID)
         
         let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
-        
-        let api = Router.get([.init(name: "key", value: "\(publicKeyHex)"), .init(name: "namespace", value: sessionNamespace)])
+        let authorizeSession = AuthorizeSessionRequest(key: publicKeyHex)
+        let api = Router.authorizeSession(T: authorizeSession)
         let result = await Service.request(router: api)
         switch result {
         case let .success(data):

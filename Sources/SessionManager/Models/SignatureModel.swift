@@ -15,12 +15,21 @@ struct SessionRequestModel: Codable {
     var data: String
     var signature: String
     var timeout: Int
+    var allowedOrigin: String?
 
-    public init(key: String, data: String, signature: String, timeout: Int) {
+    public init(key: String, data: String, signature: String, timeout: Int, allowedOrigin: String? = "*") {
         self.key = key
         self.data = data
         self.signature = signature
         self.timeout = timeout
+        self.allowedOrigin = allowedOrigin
+    }
+}
+
+struct AuthorizeSessionRequest: Codable {
+    var key: String
+    public init(key: String) {
+        self.key = key
     }
 }
 
