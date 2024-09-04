@@ -15,9 +15,9 @@ struct SessionRequestModel: Codable {
     var data: String
     var signature: String
     var timeout: Int
-    var allowedOrigin: String
+    var allowedOrigin: String?
 
-    public init(key: String, data: String, signature: String, timeout: Int, allowedOrigin: String) {
+    public init(key: String, data: String, signature: String, timeout: Int, allowedOrigin: String? = "*") {
         self.key = key
         self.data = data
         self.signature = signature

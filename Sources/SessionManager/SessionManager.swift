@@ -146,7 +146,7 @@ public class SessionManager {
 
             let sigData = try JSONSerialization.data(withJSONObject: sigRS)
             let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
-            let sessionLogoutDataModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: 1, allowedOrigin: allowedOrigin)
+            let sessionLogoutDataModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: 1)
             let api = Router.set(T: sessionLogoutDataModel)
             let result = await Service.request(router: api)
             switch result {
