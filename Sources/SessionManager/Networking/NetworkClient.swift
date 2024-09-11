@@ -10,7 +10,7 @@ import Foundation
 enum Router: NetworkManagerProtocol {
     case get([URLQueryItem])
     case set(T: Encodable)
-    case authorizeSession(T: Encodable)
+    case authorizeSession(T: Encodable, origin: String)
 
     var path: String {
         switch self {
@@ -31,15 +31,20 @@ enum Router: NetworkManagerProtocol {
             return .get(params)
         case let .set(params):
             return .post(T: params)
-        case let .authorizeSession(params):
+        case let .authorizeSession(params, _):
             return .post(T: params)
         }
     }
 
     var headers: [String: String] {
         switch self {
-        case .get, .set, .authorizeSession:
+        case .get, .set:
             return ["Content-Type": "application/json"]
+        case let .authorizeSession(_, origin):
+            return [
+                "Content-Type": "application/json",
+                "origin": origin
+            ]
         }
     }
 }

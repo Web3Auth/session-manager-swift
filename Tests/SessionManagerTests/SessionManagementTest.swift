@@ -30,7 +30,7 @@ final class SessionManagementTest: XCTestCase {
         let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
         let created = try await session.createSession(data: sfa)
         XCTAssertFalse(created.isEmpty)
-        let auth = try await session.authorizeSession()
+        let auth = try await session.authorizeSession(origin: "") //Pass refirectUrl as origin
         XCTAssertTrue(auth.keys.contains("privateKey"))
         XCTAssertTrue(auth.keys.contains("publicKey"))
     }

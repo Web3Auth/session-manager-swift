@@ -94,7 +94,7 @@ public class SessionManager {
         }
     }
 
-    public func authorizeSession() async throws -> [String: Any] {
+    public func authorizeSession(origin: String) async throws -> [String: Any] {
         guard let sessionID = sessionID else {
             throw SessionManagerError.sessionIDAbsent
         }
@@ -102,7 +102,7 @@ public class SessionManager {
         
         let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
         let authorizeSession = AuthorizeSessionRequest(key: publicKeyHex)
-        let api = Router.authorizeSession(T: authorizeSession)
+        let api = Router.authorizeSession(T: authorizeSession, origin: origin)
         let result = await Service.request(router: api)
         switch result {
         case let .success(data):
