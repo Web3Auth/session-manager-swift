@@ -84,7 +84,7 @@ public class SessionManager {
             switch result {
             case let .success(data):
                 let msgDict = try JSONSerialization.jsonObject(with: data)
-                os_log("authrorize session response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(msgDict)")
+                os_log("create session response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(msgDict)")
                 return sessionID
             case let .failure(error):
                 throw error
@@ -109,7 +109,7 @@ public class SessionManager {
             do {
                 let msgDict = try JSONSerialization.jsonObject(with: data) as? [String: String]
                 let msgData = msgDict?["message"]
-                os_log("authrorize session response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(String(describing: msgDict))")
+                os_log("authorize session response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(String(describing: msgDict))")
                 let loginDetails = try decryptData(privKeyHex: sessionID, d: msgData ?? "")
                 KeychainManager.shared.save(key: .sessionID, val: sessionID)
                 return loginDetails
