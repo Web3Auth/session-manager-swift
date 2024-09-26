@@ -27,14 +27,7 @@ public class SessionManager {
         }
     }
 
-    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, sessionID: String? = nil, allowedOrigin: String? = "*") {
-        if let sessionId = sessionId {
-            self.sessionId = sessionId
-        } else {
-            if let sessionId = KeychainManager.shared.get(key: .sessionID) {
-                self.sessionId = sessionId
-            }
-        }
+    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, allowedOrigin: String? = "*") {
         if let sessionServerBaseUrl = sessionServerBaseUrl {
             self.sessionServerBaseUrl = sessionServerBaseUrl
         }
@@ -59,7 +52,9 @@ public class SessionManager {
             let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
             
             let encodedObj = try JSONEncoder().encode(data)
-            let jsonString = String(data: encodedObj, encoding: .utf8) ?? ""
+            guard let jsonString = String(data: encodedObj, encoding: .utf8) else {
+                throw SessionManagerError.stringEncodingError
+            }
             let encData = try encryptData(privkeyHex: sessionId, jsonString)
             guard let encodedData = encData.data(using: .utf8) else {
                 throw SessionManagerError.encodingError
@@ -73,7 +68,9 @@ public class SessionManager {
             ]
 
             let sigData = try JSONSerialization.data(withJSONObject: sigRS)
-            let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
+            guard let sigJsonStr = String(data: sigData, encoding: .utf8) else {
+                throw SessionManagerError.stringEncodingError
+            }
             let sessionRequestModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: sessionTime, allowedOrigin: allowedOrigin)
             let api = Router.set(T: sessionRequestModel)
             let result = await Service.request(router: api)
@@ -106,7 +103,11 @@ public class SessionManager {
                 let msgDict = try JSONSerialization.jsonObject(with: data) as? [String: String]
                 let msgData = msgDict?["message"]
                 os_log("authorize session response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(String(describing: msgDict))")
-                let loginDetails = try decryptData(privKeyHex: sessionId, d: msgData ?? "")
+                guard let msgData = msgData else {
+                    throw SessionManagerError.dataNotFound
+                }
+
+                let loginDetails = try decryptData(privKeyHex: sessionId, d: msgData)
                 KeychainManager.shared.save(key: .sessionID, val: sessionId)
                 return loginDetails
             } catch {

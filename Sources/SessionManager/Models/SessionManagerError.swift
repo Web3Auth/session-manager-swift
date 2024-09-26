@@ -8,6 +8,8 @@ public enum SessionManagerError: Error {
     case decodingError
     case encodingError
     case sessionIdAbsent
+    case dataNotFound
+    case stringEncodingError
 }
 
 extension SessionManagerError: LocalizedError {
@@ -21,6 +23,10 @@ extension SessionManagerError: LocalizedError {
             return "Encoding error"
         case .sessionIdAbsent:
             return "SessionId not found!"
+        case .dataNotFound:
+            return "Data not found!"
+        case .stringEncodingError:
+            return "String Encoding error"
         }
     }
 }
