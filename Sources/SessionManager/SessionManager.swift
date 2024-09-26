@@ -10,13 +10,13 @@ import curveSecp256k1
 
 public class SessionManager {
     private var sessionServerBaseUrl = "https://session.web3auth.io/v2/"
-    private var sessionId: String?
+    private var sessionId: String = ""
 
     private let sessionNamespace: String = ""
     private let sessionTime: Int
     private let allowedOrigin: String
 
-    public func getSessionId() -> String? {
+    public func getSessionId() -> String {
         return sessionId
     }
 
@@ -88,9 +88,7 @@ public class SessionManager {
     }
 
     public func authorizeSession(origin: String) async throws -> [String: Any] {
-        guard let sessionId = sessionId else {
-            throw SessionManagerError.sessionIdAbsent
-        }
+        let sessionId = getSessionId()
         let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionId)
         
         let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
@@ -119,48 +117,42 @@ public class SessionManager {
     }
 
     public func invalidateSession() async throws -> Bool {
-        guard let sessionId = sessionId else {
-            throw SessionManagerError.sessionIdAbsent
-        }
-        do {
-            let privKey = try curveSecp256k1.SecretKey(hex: sessionId)
-            let publicKeyHex = try privKey.toPublic().serialize(compressed: false)
+        let sessionId = getSessionId()
+        let privKey = try curveSecp256k1.SecretKey(hex: sessionId)
+        let publicKeyHex = try privKey.toPublic().serialize(compressed: false)
                     
-            let encData = try encryptData(privkeyHex: sessionId, "")
+        let encData = try encryptData(privkeyHex: sessionId, "")
             
-            guard let encodedData = encData.data(using: .utf8) else {
-                throw SessionManagerError.encodingError
-            }
+        guard let encodedData = encData.data(using: .utf8) else {
+            throw SessionManagerError.encodingError
+        }
             
-            let hashData = try curveSecp256k1.keccak256(data: encodedData)
+        let hashData = try curveSecp256k1.keccak256(data: encodedData)
             
-            let sig = try curveSecp256k1.ECDSA.signRecoverable(key: privKey, hash: hashData.hexString).serialize()
+        let sig = try curveSecp256k1.ECDSA.signRecoverable(key: privKey, hash: hashData.hexString).serialize()
             
-            let sigRS = [
-                "r" : sig.suffix(130).prefix(64),
-                "s" : sig.suffix(66).prefix(64)
-            ]
+        let sigRS = [
+            "r" : sig.suffix(130).prefix(64),
+            "s" : sig.suffix(66).prefix(64)
+        ]
 
-            let sigData = try JSONSerialization.data(withJSONObject: sigRS)
-            let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
-            let sessionLogoutDataModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: 1)
-            let api = Router.set(T: sessionLogoutDataModel)
-            let result = await Service.request(router: api)
-            switch result {
-            case let .success(data):
-                do {
-                    let msgDict = try JSONSerialization.jsonObject(with: data)
-                    os_log("logout response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(msgDict)")
-                    KeychainManager.shared.delete(key: .sessionID)
-                    return true
-                } catch {
-                    throw error
-                }
-            case let .failure(error):
+        let sigData = try JSONSerialization.data(withJSONObject: sigRS)
+        let sigJsonStr = String(data: sigData, encoding: .utf8) ?? ""
+        let sessionLogoutDataModel = SessionRequestModel(key: publicKeyHex, data: encData, signature: sigJsonStr, timeout: 1)
+        let api = Router.set(T: sessionLogoutDataModel)
+        let result = await Service.request(router: api)
+        switch result {
+        case let .success(data):
+            do {
+                let msgDict = try JSONSerialization.jsonObject(with: data)
+                os_log("logout response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(msgDict)")
+                KeychainManager.shared.delete(key: .sessionID)
+                return true
+            } catch {
                 throw error
             }
-        } catch let error {
-            throw error
-        }
+        case let .failure(error):
+                throw error
+            }
     }
 }
