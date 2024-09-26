@@ -20,7 +20,7 @@ extension SessionManagerError: LocalizedError {
         case .encodingError:
             return "Encoding error"
         case .sessionIdAbsent:
-            return "SessionID not found!"
+            return "SessionId not found!"
         }
     }
 }
