@@ -28,6 +28,9 @@ public class SessionManager {
     }
 
     public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, allowedOrigin: String? = "*") {
+        if let sessionId = KeychainManager.shared.get(key: .sessionID) {
+            self.sessionId = sessionId
+        }
         if let sessionServerBaseUrl = sessionServerBaseUrl {
             self.sessionServerBaseUrl = sessionServerBaseUrl
         }
