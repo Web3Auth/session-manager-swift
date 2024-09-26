@@ -7,7 +7,7 @@ public enum SessionManagerError: Error {
     case runtimeError(String)
     case decodingError
     case encodingError
-    case sessionIDAbsent
+    case sessionIdAbsent
 }
 
 extension SessionManagerError: LocalizedError {
@@ -19,7 +19,7 @@ extension SessionManagerError: LocalizedError {
             return "Decoding error"
         case .encodingError:
             return "Encoding error"
-        case .sessionIDAbsent:
+        case .sessionIdAbsent:
             return "SessionID not found!"
         }
     }

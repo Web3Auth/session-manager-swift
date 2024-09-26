@@ -29,6 +29,7 @@ final class SessionManagementTest: XCTestCase {
         let (privKey, pubKey) = try generatePrivateandPublicKey()
         let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
         let created = try await session.createSession(data: sfa)
+        session.saveSessionId(created)
         XCTAssertFalse(created.isEmpty)
         let auth = try await session.authorizeSession(origin: "") //Pass refirectUrl as origin
         XCTAssertTrue(auth.keys.contains("privateKey"))
@@ -68,7 +69,11 @@ final class SessionManagementTest: XCTestCase {
     }
 
     func test_invalidateSession() async throws {
-        let session = SessionManager(sessionID: sessionID)
+        let session = SessionManager()
+        let (privKey, pubKey) = try generatePrivateandPublicKey()
+        let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
+        let created = try await session.createSession(data: sfa)
+        session.saveSessionId(created)
         let invalidated = try await session.invalidateSession()
         XCTAssertEqual(invalidated, true)
     }

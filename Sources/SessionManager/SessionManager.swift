@@ -10,32 +10,29 @@ import curveSecp256k1
 
 public class SessionManager {
     private var sessionServerBaseUrl = "https://session.web3auth.io/v2/"
-    private var sessionID: String? {
-        didSet {
-            if let sessionID = sessionID {
-                KeychainManager.shared.save(key: .sessionID, val: sessionID)
-            }
-        }
-    }
+    private var sessionId: String?
 
     private let sessionNamespace: String = ""
     private let sessionTime: Int
     private let allowedOrigin: String
 
-    public func getSessionID() -> String? {
-        return sessionID
+    public func getSessionId() -> String? {
+        return sessionId
     }
 
-    public func setSessionID(_ val: String) {
-        sessionID = val
+    public func saveSessionId(_ sessionId: String) {
+        if !sessionId.isEmpty {
+            self.sessionId = sessionId
+            KeychainManager.shared.save(key: .sessionID, val: sessionId)
+        }
     }
 
     public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, sessionID: String? = nil, allowedOrigin: String? = "*") {
-        if let sessionID = sessionID {
-            self.sessionID = sessionID
+        if let sessionId = sessionId {
+            self.sessionId = sessionId
         } else {
-            if let sessionID = KeychainManager.shared.get(key: .sessionID) {
-                self.sessionID = sessionID
+            if let sessionId = KeychainManager.shared.get(key: .sessionID) {
+                self.sessionId = sessionId
             }
         }
         if let sessionServerBaseUrl = sessionServerBaseUrl {
@@ -55,16 +52,15 @@ public class SessionManager {
 
     public func createSession<T: Encodable>(data: T) async throws -> String {
         do {
-            guard let sessionID = try generateRandomSessionID() else { throw SessionManagerError.sessionIDAbsent }
-            self.sessionID = sessionID
+            guard let sessionId = try generateRandomSessionID() else { throw SessionManagerError.sessionIdAbsent }
             
-            let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionID)
+            let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionId)
 
             let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
             
             let encodedObj = try JSONEncoder().encode(data)
             let jsonString = String(data: encodedObj, encoding: .utf8) ?? ""
-            let encData = try encryptData(privkeyHex: sessionID, jsonString)
+            let encData = try encryptData(privkeyHex: sessionId, jsonString)
             guard let encodedData = encData.data(using: .utf8) else {
                 throw SessionManagerError.encodingError
             }
@@ -85,7 +81,7 @@ public class SessionManager {
             case let .success(data):
                 let msgDict = try JSONSerialization.jsonObject(with: data)
                 os_log("create session response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(msgDict)")
-                return sessionID
+                return sessionId
             case let .failure(error):
                 throw error
             }
@@ -95,10 +91,10 @@ public class SessionManager {
     }
 
     public func authorizeSession(origin: String) async throws -> [String: Any] {
-        guard let sessionID = sessionID else {
-            throw SessionManagerError.sessionIDAbsent
+        guard let sessionId = sessionId else {
+            throw SessionManagerError.sessionIdAbsent
         }
-        let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionID)
+        let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionId)
         
         let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
         let authorizeSession = AuthorizeSessionRequest(key: publicKeyHex)
@@ -110,8 +106,8 @@ public class SessionManager {
                 let msgDict = try JSONSerialization.jsonObject(with: data) as? [String: String]
                 let msgData = msgDict?["message"]
                 os_log("authorize session response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(String(describing: msgDict))")
-                let loginDetails = try decryptData(privKeyHex: sessionID, d: msgData ?? "")
-                KeychainManager.shared.save(key: .sessionID, val: sessionID)
+                let loginDetails = try decryptData(privKeyHex: sessionId, d: msgData ?? "")
+                KeychainManager.shared.save(key: .sessionID, val: sessionId)
                 return loginDetails
             } catch {
                 throw error
@@ -122,14 +118,14 @@ public class SessionManager {
     }
 
     public func invalidateSession() async throws -> Bool {
-        guard let sessionID = sessionID else {
-            throw SessionManagerError.sessionIDAbsent
+        guard let sessionId = sessionId else {
+            throw SessionManagerError.sessionIdAbsent
         }
         do {
-            let privKey = try curveSecp256k1.SecretKey(hex: sessionID)
+            let privKey = try curveSecp256k1.SecretKey(hex: sessionId)
             let publicKeyHex = try privKey.toPublic().serialize(compressed: false)
                     
-            let encData = try encryptData(privkeyHex: sessionID, "")
+            let encData = try encryptData(privkeyHex: sessionId, "")
             
             guard let encodedData = encData.data(using: .utf8) else {
                 throw SessionManagerError.encodingError
