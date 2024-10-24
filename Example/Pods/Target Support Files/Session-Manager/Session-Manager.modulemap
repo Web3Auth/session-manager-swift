@@ -1,6 +1,0 @@
-framework module SessionManager {
-  umbrella header "Session-Manager-umbrella.h"
-
-  export *
-  module * { export * }
-}

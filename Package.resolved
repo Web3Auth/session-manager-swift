@@ -5,8 +5,8 @@
         "package": "curvelib.swift",
         "repositoryURL": "https://github.com/tkey/curvelib.swift",
         "state": {
-          "branch": "increase_minimum_version",
-          "revision": "2ff93cb148a4b4b306fb5039fa21cce975d95e07",
+          "branch": "2.0.0",
+          "revision": "432bf1abe7ff505fc2ac9fcf697341ff5b2dc6d0",
           "version": null
         }
       },
