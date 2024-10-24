@@ -79,6 +79,7 @@ final class SessionManagementTest: XCTestCase {
     }
     
     func test_session_expired_error() async throws {
+        var caughtCorrectError: Bool = false;
         do {
             let sessionId = try SessionManager.generateRandomSessionID();
             let session = SessionManager(sessionTime: 1, sessionId: sessionId)
@@ -88,10 +89,9 @@ final class SessionManagementTest: XCTestCase {
             let _ = try await session.authorizeSession(origin: "origin")
             sleep(2)
             let _ = try await session.authorizeSession(origin: "origin")
-            SessionManager.saveSessionIdToStorage(created)
-            try await session.invalidateSession()
         } catch SessionManagerError.dataNotFound {
-            //no-op, success case
+            caughtCorrectError = true
         }
+        XCTAssertTrue(caughtCorrectError)
     }
 }
