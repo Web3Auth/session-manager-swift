@@ -8,28 +8,36 @@
 
 import UIKit
 import SessionManager
+import curveSecp256k1
 
 class ViewController: UIViewController {
-
+    struct SFAModel: Codable {
+        let publicKey: String
+        let privateKey: String
+    }
+    
     var session: SessionManager!
-    let sessionID: String = "916212c2194f45f931b08cbb88ac1b3cc1ab6396e047cc02af583a3c6c36584a"
 
+    private func generatePrivateandPublicKey() throws -> (privKey: String, pubKey: String) {
+        let privKeyData = curveSecp256k1.SecretKey()
+        let publicKey = try privKeyData.toPublic()
+        let serialized = try publicKey.serialize(compressed: false)
+        return (privKey: try privKeyData.serialize(), pubKey: serialized)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        session = SessionManager(sessionID: sessionID)
         Task {
-            await getSessionData()
+            let sessionId = try SessionManager.generateRandomSessionID()!;
+            session = SessionManager(sessionId: sessionId)
+            let (privKey, pubKey) = try generatePrivateandPublicKey()
+            let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
+            let created = try await session.createSession(data: sfa)
+            SessionManager.saveSessionIdToStorage(sessionId)
+                    let auth = try await session.authorizeSession(origin: "")
+            print(created)
         }
         // Do any additional setup after loading the view, typically from a nib.
-    }
-
-    func getSessionData() async {
-        do {
-            let result: SFAModel = try await session.authorizeSession()
-            print(result)
-        } catch {
-            print(error)
-        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -37,9 +45,4 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-}
-
-struct SFAModel: Codable {
-    let publicKey: String
-    let privateKey: String
 }

@@ -1,0 +1,6 @@
+framework module curveSecp256k1 {
+  umbrella header "curvelib.swift-umbrella.h"
+
+  export *
+  module * { export * }
+}

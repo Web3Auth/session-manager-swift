@@ -8,8 +8,6 @@ struct SFAModel: Codable {
 }
 
 final class SessionManagementTest: XCTestCase {
-    var sessionID: String = "ab6fb847033ccb155769bcd1193d0da2096fb3419193725e5a48b7d40e65caa3"
-
     private func generatePrivateandPublicKey() throws -> (privKey: String, pubKey: String) {
         let privKeyData = curveSecp256k1.SecretKey()
         let publicKey = try privKeyData.toPublic()
@@ -18,17 +16,20 @@ final class SessionManagementTest: XCTestCase {
     }
 
     func test_createSessionID() async throws {
-        let session = SessionManager()
+        let sessionId = try SessionManager.generateRandomSessionID();
+        let session = SessionManager(sessionId: sessionId)
         let (privKey, pubKey) = try generatePrivateandPublicKey()
         let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
         let _ = try await session.createSession(data: sfa)
     }
 
     func test_authoriseSessionID() async throws {
-        let session = SessionManager()
+        let sessionId = try SessionManager.generateRandomSessionID();
+        let session = SessionManager(sessionId: sessionId)
         let (privKey, pubKey) = try generatePrivateandPublicKey()
         let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
         let created = try await session.createSession(data: sfa)
+        SessionManager.saveSessionIdToStorage(created)
         XCTAssertFalse(created.isEmpty)
         let auth = try await session.authorizeSession(origin: "") //Pass refirectUrl as origin
         XCTAssertTrue(auth.keys.contains("privateKey"))
@@ -68,8 +69,12 @@ final class SessionManagementTest: XCTestCase {
     }
 
     func test_invalidateSession() async throws {
-        let session = SessionManager(sessionID: sessionID)
-        let invalidated = try await session.invalidateSession()
-        XCTAssertEqual(invalidated, true)
+        let sessionId = try SessionManager.generateRandomSessionID();
+        let session = SessionManager(sessionId: sessionId)
+        let (privKey, pubKey) = try generatePrivateandPublicKey()
+        let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
+        let created = try await session.createSession(data: sfa)
+        SessionManager.saveSessionIdToStorage(created)
+        try await session.invalidateSession()
     }
 }

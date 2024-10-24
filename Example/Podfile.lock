@@ -1,43 +1,27 @@
 PODS:
-  - BigInt (5.0.0)
-  - CryptoSwift (1.5.1)
-  - GenericJSON (2.0.2)
+  - curvelib.swift (2.0.0)
   - KeychainSwift (20.0.0)
-  - secp256k1.swift (0.1.4)
-  - Session-Manager (1.0.0):
-    - CryptoSwift (~> 1.5.1)
+  - TorusSessionManager (6.0.0):
+    - curvelib.swift (~> 2.0.0)
     - KeychainSwift (~> 20.0.0)
-    - web3.swift (~> 0.9.3)
-  - web3.swift (0.9.3):
-    - BigInt (~> 5.0.0)
-    - GenericJSON (~> 2.0)
-    - secp256k1.swift (~> 0.1)
 
 DEPENDENCIES:
-  - Session-Manager (from `../`)
+  - TorusSessionManager (from `../`)
 
 SPEC REPOS:
   trunk:
-    - BigInt
-    - CryptoSwift
-    - GenericJSON
+    - curvelib.swift
     - KeychainSwift
-    - secp256k1.swift
-    - web3.swift
 
 EXTERNAL SOURCES:
-  Session-Manager:
+  TorusSessionManager:
     :path: "../"
 
 SPEC CHECKSUMS:
-  BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
-  CryptoSwift: c4f2debceb38bf44c80659afe009f71e23e4a082
-  GenericJSON: 79a840eeb77030962e8cf02a62d36bd413b67626
+  curvelib.swift: b9223e5cac801effed8a5fe8968e952b3fe427a5
   KeychainSwift: 0ce6a4d13f7228054d1a71bb1b500448fb2ab837
-  secp256k1.swift: a7e7a214f6db6ce5db32cc6b2b45e5c4dd633634
-  Session-Manager: f73626fea681f380efc86c700de2aa955bfe54b4
-  web3.swift: c6c3bf1f853743f8a7a58d263e5f7e46545e22c7
+  TorusSessionManager: a2d63655c6f795d1609acb1b9feaf5ffb7f9e4ed
 
-PODFILE CHECKSUM: 03302ff2fb2892149218b20d78a4efc09c152f57
+PODFILE CHECKSUM: c29a712eea414ba0237d853898c62c228bdfbcda
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.15.2

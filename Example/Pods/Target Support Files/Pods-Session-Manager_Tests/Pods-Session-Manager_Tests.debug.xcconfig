@@ -1,8 +1,8 @@
 CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO
-FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/BigInt" "${PODS_CONFIGURATION_BUILD_DIR}/CryptoSwift" "${PODS_CONFIGURATION_BUILD_DIR}/GenericJSON" "${PODS_CONFIGURATION_BUILD_DIR}/KeychainSwift" "${PODS_CONFIGURATION_BUILD_DIR}/Session-Manager" "${PODS_CONFIGURATION_BUILD_DIR}/secp256k1.swift" "${PODS_CONFIGURATION_BUILD_DIR}/web3.swift"
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/KeychainSwift" "${PODS_CONFIGURATION_BUILD_DIR}/TorusSessionManager" "${PODS_CONFIGURATION_BUILD_DIR}/curvelib.swift" "${PODS_ROOT}/curvelib.swift/Sources/curve_secp256k1"
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
-HEADER_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/BigInt/BigInt.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/CryptoSwift/CryptoSwift.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/GenericJSON/GenericJSON.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/KeychainSwift/KeychainSwift.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/Session-Manager/SessionManager.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/secp256k1.swift/secp256k1.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/web3.swift/web3.framework/Headers"
-OTHER_LDFLAGS = $(inherited) -framework "BigInt" -framework "CryptoSwift" -framework "GenericJSON" -framework "KeychainSwift" -framework "SessionManager" -framework "secp256k1" -framework "web3"
+HEADER_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/KeychainSwift/KeychainSwift.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/TorusSessionManager/SessionManager.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/curvelib.swift/curveSecp256k1.framework/Headers" "${PODS_XCFRAMEWORKS_BUILD_DIR}/curvelib.swift/Headers"
+OTHER_LDFLAGS = $(inherited) -framework "KeychainSwift" -framework "SessionManager" -framework "curveSecp256k1"
 PODS_BUILD_DIR = ${BUILD_DIR}
 PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)
 PODS_PODFILE_DIR_PATH = ${SRCROOT}/.
