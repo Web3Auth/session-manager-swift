@@ -77,4 +77,21 @@ final class SessionManagementTest: XCTestCase {
         SessionManager.saveSessionIdToStorage(created)
         try await session.invalidateSession()
     }
+    
+    func test_session_expired_error() async throws {
+        do {
+            let sessionId = try SessionManager.generateRandomSessionID();
+            let session = SessionManager(sessionTime: 1, sessionId: sessionId)
+            let (privKey, pubKey) = try generatePrivateandPublicKey()
+            let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
+            let created = try await session.createSession(data: sfa)
+            let _ = try await session.authorizeSession(origin: "origin")
+            sleep(2)
+            let _ = try await session.authorizeSession(origin: "origin")
+            SessionManager.saveSessionIdToStorage(created)
+            try await session.invalidateSession()
+        } catch SessionManagerError.dataNotFound {
+            //no-op, success case
+        }
+    }
 }
