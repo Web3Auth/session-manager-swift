@@ -3,7 +3,7 @@ use_frameworks!
 platform :ios, '14.0'
 
 target 'Session-Manager_Example' do
-  pod 'Session-Manager', :path => '../'
+  pod 'TorusSessionManager', :path => '../'
 
   target 'Session-Manager_Tests' do
     inherit! :search_paths

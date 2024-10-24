@@ -1,0 +1,6 @@
+framework module SessionManager {
+  umbrella header "TorusSessionManager-umbrella.h"
+
+  export *
+  module * { export * }
+}
