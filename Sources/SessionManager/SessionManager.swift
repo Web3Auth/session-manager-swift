@@ -20,16 +20,23 @@ public class SessionManager {
         return sessionId
     }
 
-    public func saveSessionId(_ sessionId: String) {
+    public static func saveSessionIdToStorage(_ sessionId: String) {
         if !sessionId.isEmpty {
-            self.sessionId = sessionId
             KeychainManager.shared.save(key: .sessionID, val: sessionId)
         }
     }
+    
+    public static func getSessionIdFromStorage() -> String? {
+        return KeychainManager.shared.get(key: .sessionID)
+    }
+    
+    public static func deleteSessionIdFromStorage() {
+        return KeychainManager.shared.delete(key: .sessionID)
+    }
 
-    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, allowedOrigin: String? = "*") {
-        if let sessionId = KeychainManager.shared.get(key: .sessionID) {
-            self.sessionId = sessionId
+    public init(sessionServerBaseUrl: String? = nil, sessionTime: Int = 86400, allowedOrigin: String? = "*", sessionId: String? = nil) {
+        if sessionId != nil {
+            self.sessionId = sessionId!
         }
         if let sessionServerBaseUrl = sessionServerBaseUrl {
             self.sessionServerBaseUrl = sessionServerBaseUrl
@@ -38,8 +45,12 @@ public class SessionManager {
         self.allowedOrigin = allowedOrigin ?? "*"
         Router.baseURL = self.sessionServerBaseUrl
     }
+    
+    public func setSessionId(sessionId: String) {
+        self.sessionId = sessionId
+    }
 
-    private func generateRandomSessionID() throws -> String? {
+    public static func generateRandomSessionID() throws -> String? {
         if let val = try generatePrivateKeyData()?.hexString.padStart(toLength: 64, padString: "0") {
             return val
         }
@@ -48,7 +59,9 @@ public class SessionManager {
 
     public func createSession<T: Encodable>(data: T) async throws -> String {
         do {
-            guard let sessionId = try generateRandomSessionID() else { throw SessionManagerError.sessionIdAbsent }
+            if self.sessionId.isEmpty {
+                throw SessionManagerError.sessionIdAbsent
+            }
             
             let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionId)
 
@@ -91,7 +104,12 @@ public class SessionManager {
     }
 
     public func authorizeSession(origin: String) async throws -> [String: Any] {
-        let sessionId = getSessionId()
+        if self.sessionId.isEmpty {
+            throw SessionManagerError.sessionIdAbsent
+        }
+        
+        let sessionId = self.sessionId
+        
         let sessionSecret = try curveSecp256k1.SecretKey(hex: sessionId)
         
         let publicKeyHex = try sessionSecret.toPublic().serialize(compressed: false)
@@ -109,7 +127,6 @@ public class SessionManager {
                 }
 
                 let loginDetails = try decryptData(privKeyHex: sessionId, d: msgData)
-                KeychainManager.shared.save(key: .sessionID, val: sessionId)
                 return loginDetails
             } catch {
                 throw error
@@ -119,8 +136,12 @@ public class SessionManager {
         }
     }
 
-    public func invalidateSession() async throws -> Bool {
-        let sessionId = getSessionId()
+    public func invalidateSession() async throws {
+        if self.sessionId.isEmpty {
+            throw SessionManagerError.sessionIdAbsent
+        }
+        let sessionId = self.sessionId
+        
         let privKey = try curveSecp256k1.SecretKey(hex: sessionId)
         let publicKeyHex = try privKey.toPublic().serialize(compressed: false)
                     
@@ -149,8 +170,6 @@ public class SessionManager {
             do {
                 let msgDict = try JSONSerialization.jsonObject(with: data)
                 os_log("logout response is: %@", log: getTorusLogger(log: Web3AuthLogger.network, type: .info), type: .info, "\(msgDict)")
-                KeychainManager.shared.delete(key: .sessionID)
-                return true
             } catch {
                 throw error
             }

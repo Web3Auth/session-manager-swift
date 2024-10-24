@@ -17,7 +17,6 @@ class ViewController: UIViewController {
     }
     
     var session: SessionManager!
-    let sessionID: String = "ab6fb847033ccb155769bcd1193d0da2096fb3419193725e5a48b7d40e65caa3"
 
     private func generatePrivateandPublicKey() throws -> (privKey: String, pubKey: String) {
         let privKeyData = curveSecp256k1.SecretKey()
@@ -28,12 +27,13 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        session = SessionManager()
         Task {
+            let sessionId = try SessionManager.generateRandomSessionID()!;
+            session = SessionManager(sessionId: sessionId)
             let (privKey, pubKey) = try generatePrivateandPublicKey()
             let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
             let created = try await session.createSession(data: sfa)
-                    session.saveSessionId(created)
+            SessionManager.saveSessionIdToStorage(sessionId)
                     let auth = try await session.authorizeSession(origin: "")
             print(created)
         }
