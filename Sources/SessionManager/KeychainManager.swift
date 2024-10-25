@@ -24,29 +24,28 @@ public enum KeychainConstantEnum {
 protocol KeychainManagerProtocol {
     func get(key: KeychainConstantEnum) -> String?
 
-    func delete(key: KeychainConstantEnum)
+    func delete(key: KeychainConstantEnum) -> Bool
 
-    func save(key: KeychainConstantEnum, val: String)
+    func save(key: KeychainConstantEnum, val: String) -> Bool
 }
 
 public class KeychainManager: KeychainManagerProtocol {
-    private let keychain = KeychainSwift()
     public static let shared = KeychainManager()
     public var getAllKeys: [String] {
-        return keychain.allKeys
+        return KeychainSwift().allKeys
     }
 
     private init() {}
 
     public func get(key: KeychainConstantEnum) -> String? {
-        return keychain.get(key.value)
+        return KeychainSwift().get(key.value)
     }
 
-    public func delete(key: KeychainConstantEnum) {
-        keychain.delete(key.value)
+    public func delete(key: KeychainConstantEnum) -> Bool {
+        return KeychainSwift().delete(key.value)
     }
 
-    public func save(key: KeychainConstantEnum, val: String) {
-        keychain.set(val, forKey: key.value)
+    public func save(key: KeychainConstantEnum, val: String) -> Bool {
+        return KeychainSwift().set(val, forKey: key.value)
     }
 }

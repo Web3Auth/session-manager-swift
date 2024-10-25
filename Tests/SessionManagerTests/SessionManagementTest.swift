@@ -14,6 +14,14 @@ final class SessionManagementTest: XCTestCase {
         let serialized = try publicKey.serialize(compressed: false)
         return (privKey: try privKeyData.serialize(), pubKey: serialized)
     }
+    
+    func testKeyManager() async throws {
+        let success = KeychainManager.shared.save(key: .sessionID, val: "hello")
+        XCTAssertTrue(success)
+        let result = KeychainManager.shared.get(key: .sessionID)
+        XCTAssertEqual("hello", result)
+        
+    }
 
     func test_createSessionID() async throws {
         let sessionId = try SessionManager.generateRandomSessionID();
@@ -29,7 +37,7 @@ final class SessionManagementTest: XCTestCase {
         let (privKey, pubKey) = try generatePrivateandPublicKey()
         let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
         let created = try await session.createSession(data: sfa)
-        SessionManager.saveSessionIdToStorage(created)
+        let _ = try SessionManager.saveSessionIdToStorage(created)
         XCTAssertFalse(created.isEmpty)
         let auth = try await session.authorizeSession(origin: "") //Pass refirectUrl as origin
         XCTAssertTrue(auth.keys.contains("privateKey"))
@@ -74,7 +82,7 @@ final class SessionManagementTest: XCTestCase {
         let (privKey, pubKey) = try generatePrivateandPublicKey()
         let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
         let created = try await session.createSession(data: sfa)
-        SessionManager.saveSessionIdToStorage(created)
+        let _ = try SessionManager.saveSessionIdToStorage(created)
         try await session.invalidateSession()
     }
     
@@ -85,7 +93,7 @@ final class SessionManagementTest: XCTestCase {
             let session = SessionManager(sessionTime: 1, sessionId: sessionId)
             let (privKey, pubKey) = try generatePrivateandPublicKey()
             let sfa = SFAModel(publicKey: pubKey, privateKey: privKey)
-            let created = try await session.createSession(data: sfa)
+            let _ = try await session.createSession(data: sfa)
             let _ = try await session.authorizeSession(origin: "origin")
             sleep(2)
             let _ = try await session.authorizeSession(origin: "origin")

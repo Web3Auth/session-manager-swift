@@ -20,9 +20,11 @@ public class SessionManager {
         return sessionId
     }
 
-    public static func saveSessionIdToStorage(_ sessionId: String) {
+    public static func saveSessionIdToStorage(_ sessionId: String) throws -> Bool {
         if !sessionId.isEmpty {
-            KeychainManager.shared.save(key: .sessionID, val: sessionId)
+            return KeychainManager.shared.save(key: .sessionID, val: sessionId)
+        } else {
+            throw SessionManagerError.sessionIdAbsent
         }
     }
     
@@ -30,7 +32,7 @@ public class SessionManager {
         return KeychainManager.shared.get(key: .sessionID)
     }
     
-    public static func deleteSessionIdFromStorage() {
+    public static func deleteSessionIdFromStorage() -> Bool {
         return KeychainManager.shared.delete(key: .sessionID)
     }
 
