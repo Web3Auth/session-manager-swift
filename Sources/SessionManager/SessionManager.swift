@@ -28,6 +28,10 @@ public class SessionManager {
         }
     }
     
+    public static func getAllSessionIdFromStorage() -> [String] {
+        return KeychainManager.shared.getAllKeys
+    }
+    
     public static func getSessionIdFromStorage() -> String? {
         return KeychainManager.shared.get(key: .sessionID)
     }
