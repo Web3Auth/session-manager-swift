@@ -125,6 +125,10 @@ public class SessionManager {
                 guard let msgData = msgData else {
                     throw SessionManagerError.dataNotFound
                 }
+                
+                if msgData.isEmpty {
+                    throw SessionManagerError.dataNotFound
+                }
 
                 let loginDetails = try decryptData(privKeyHex: sessionId, d: msgData)
                 return loginDetails
