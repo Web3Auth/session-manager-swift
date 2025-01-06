@@ -41,7 +41,7 @@ public class SessionManager {
         if let sessionServerBaseUrl = sessionServerBaseUrl {
             self.sessionServerBaseUrl = sessionServerBaseUrl
         }
-        self.sessionTime = min(sessionTime, 7 * 86400)
+        self.sessionTime = min(sessionTime, 30 * 86400)
         self.allowedOrigin = allowedOrigin ?? "*"
         Router.baseURL = self.sessionServerBaseUrl
     }
